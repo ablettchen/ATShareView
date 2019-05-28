@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		19FF2A0E229DA8C90004B445 /* avatar@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 19FF2A0D229DA8C90004B445 /* avatar@2x.png */; };
 		5BDFDF3034ADA143A1A47FA1 /* libPods-ATShareView_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9261DE56D582B10714386B65 /* libPods-ATShareView_Tests.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		19FF2A0D229DA8C90004B445 /* avatar@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "avatar@2x.png"; sourceTree = "<group>"; };
 		21A22236F7415765F0DCAB7E /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		556944FBB52F2D176D0758E3 /* Pods-ATShareView_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ATShareView_Tests.debug.xcconfig"; path = "Target Support Files/Pods-ATShareView_Tests/Pods-ATShareView_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		5BE6ED2ED265CC1AAA40179C /* Pods-ATShareView_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ATShareView_Example.release.xcconfig"; path = "Target Support Files/Pods-ATShareView_Example/Pods-ATShareView_Example.release.xcconfig"; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 		6003F593195388D20070C39A /* Example for ATShareView */ = {
 			isa = PBXGroup;
 			children = (
+				19FF2A0D229DA8C90004B445 /* avatar@2x.png */,
 				6003F59C195388D20070C39A /* ATAppDelegate.h */,
 				6003F59D195388D20070C39A /* ATAppDelegate.m */,
 				873B8AEA1B1F5CCA007FD442 /* Main.storyboard */,
@@ -247,6 +250,9 @@
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "ablettchen@gmail.com";
 				TargetAttributes = {
+					6003F589195388D20070C39A = {
+						DevelopmentTeam = 37Z4FSY7RD;
+					};
 					6003F5AD195388D20070C39A = {
 						TestTargetID = 6003F589195388D20070C39A;
 					};
@@ -280,6 +286,7 @@
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */,
 				6003F5A9195388D20070C39A /* Images.xcassets in Resources */,
+				19FF2A0E229DA8C90004B445 /* avatar@2x.png in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -522,6 +529,7 @@
 			baseConfigurationReference = F6E1EA17A6664A9E2A914857 /* Pods-ATShareView_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 37Z4FSY7RD;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ATShareView/ATShareView-Prefix.pch";
 				INFOPLIST_FILE = "ATShareView/ATShareView-Info.plist";
@@ -537,6 +545,7 @@
 			baseConfigurationReference = 5BE6ED2ED265CC1AAA40179C /* Pods-ATShareView_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 37Z4FSY7RD;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ATShareView/ATShareView-Prefix.pch";
 				INFOPLIST_FILE = "ATShareView/ATShareView-Info.plist";

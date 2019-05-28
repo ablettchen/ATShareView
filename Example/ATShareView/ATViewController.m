@@ -11,6 +11,15 @@
 #import <ATCategories/ATCategories.h>
 #import <ATShareView.h>
 
+#define wechat_appkey       @"wx2ae02e63bbc106f9"
+#define wechat_appSecret    @"135c066f553499b7acd1549bf679308a"
+#define qq_appkey           @"wx2ae02e63bbc106f9"
+#define qq_appSecret        @"135c066f553499b7acd1549bf679308a"
+#define sina_appkey         @"wx2ae02e63bbc106f9"
+#define sina_appSecret      @"135c066f553499b7acd1549bf679308a"
+#define umeng_redirectUrl   @"http://mobile.umeng.com/social"
+#define sina_redirectUrl    @"http://sns.whalecloud.com/sina2/callback"
+
 @interface ATViewController ()
 
 @end
@@ -58,16 +67,39 @@
     web.thumb = [UIImage imageNamed:@"avatar"];
     web.urlString = @"https://github.com/ablettchen/ATShareView";
     
-    ATSocialWechat *social = [ATSocialWechat new];
-    social.appKey = @"wx2ae02e63bbc106f9";
-    social.appSecret = @"135c066f553499b7acd1549bf679308a";
-    social.redirectURL = @"http://mobile.umeng.com/social";
+    ATSocialWechat *wechat = [ATSocialWechat new];
+    wechat.appKey = wechat_appkey;
+    wechat.appSecret = wechat_appSecret;
+    wechat.redirectURL = umeng_redirectUrl;
+    
+    ATSocialWechatTimeline *wechatTimeline = [ATSocialWechatTimeline new];
+    
+    ATSocialQQ *qq = [ATSocialQQ new];
+    qq.appKey = qq_appkey;
+    qq.appSecret = qq_appSecret;
+    qq.redirectURL = umeng_redirectUrl;
+    
+    ATSocialQZone *qZone = [ATSocialQZone new];
+    
+    ATSocialSina *sina = [ATSocialSina new];
+    sina.appKey = sina_appkey;
+    sina.appSecret = sina_appSecret;
+    sina.redirectURL = sina_redirectUrl;
+    
+    ATSocialWechat *wechat1 = [ATSocialWechat new];
+    
+    NSArray <id<ATSocialProtocol>> *socails = @[wechat, wechatTimeline, qq, qZone, sina, wechat1];
     
     void(^selected)(id<ATSocialProtocol> _Nonnull social) = ^(id<ATSocialProtocol> _Nonnull social) {
         
     };
     
-    ATShareView.build.withTitle(@"网页由github.com提供").withRes(web).withSocials(@[social]).withSelected(selected).showInWindow();
+    void(^ _Nullable finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social) = ^(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social) {
+        
+    };
+    
+    ATShareView.build.withTitle(@"网页由github.com提供").withRes(web).withSocials(socails)\
+    .withSelected(selected).withFinished(finished).showInWindow();
     
 }
 

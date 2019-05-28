@@ -20,10 +20,68 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     return [at_share_bundle() at_imageNamed:name];
 }
 
-@interface ATShareView ()
+@interface ATShareActionCell : UICollectionViewCell
+@property (copy, nonatomic) NSString *icon;
+@property (copy, nonatomic) NSString *name;
+@end
+@interface ATShareActionCell ()
+@property (strong, nonatomic) UIImageView *iconView;
+@property (strong, nonatomic) UILabel *nameLabel;
+@end
+@implementation ATShareActionCell
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (!self) return nil;
+    
+    self.backgroundColor = [UIColor clearColor];
+    
+    ATShareViewConfig *config = [ATShareViewConfig globalConfig];
+    
+    _iconView = ({
+        UIImageView *view = [UIImageView new];
+        [self addSubview:view];
+        [view mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.size.mas_equalTo(CGSizeMake(config.socailWidth, config.socailWidth));
+            make.top.equalTo(self);
+            make.centerX.equalTo(self);
+        }];
+        view;
+    });
+    
+    _nameLabel = ({
+        UILabel *label = [UILabel new];
+        [self addSubview:label];
+        [label mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.iconView.mas_bottom).offset(10);
+            make.left.right.equalTo(self);
+        }];
+        label.font = [UIFont systemFontOfSize:config.socialFontSize];
+        label.textColor = config.socialColor;
+        label.textAlignment = NSTextAlignmentCenter;
+        label.numberOfLines = 2;
+        label;
+    });
+    
+    return self;
+}
+
+- (void)setIcon:(NSString *)icon {
+    _icon = icon;
+    self.iconView.image = at_imageNamed(icon);
+}
+
+- (void)setName:(NSString *)name {
+    _name = name;
+    self.nameLabel.text = name?:@"-";
+}
+
+@end
+
+@interface ATShareView ()<UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UICollectionViewDataSource>
 @property (strong, nonatomic) UILabel *titleLabel;
-@property (strong, nonatomic) UIView *shareView;
-@property (strong, nonatomic) UIView *extendView;
+@property (strong, nonatomic) UICollectionView *socialView;
+@property (strong, nonatomic) UICollectionView *actionView;
 @property (strong, nonatomic) UIButton *cancelBtn;
 @end
 @implementation ATShareView
@@ -35,7 +93,8 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
 - (void)setupWithTitle:(nullable NSString *)title
                    res:(id<ATShareResProtocol>)res
                socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-              selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected {
+              selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected
+              finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished{
     
     NSAssert(res != nil, @"Could not find res.");
     NSAssert(socials.count > 0, @"Could not find any socials.");
@@ -44,13 +103,13 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.res = res;
     self.socials = socials;
     self.selected = selected;
+    self.finished = finished;
     
     self.type = ATPopupTypeSheet;
     
     ATShareViewConfig *config = [ATShareViewConfig globalConfig];
     self.layer.cornerRadius = config.cornerRadius;
     self.clipsToBounds = YES;
-    //self.backgroundColor = config.backgroundColor;
     self.layer.borderWidth = AT_SPLIT_WIDTH;
     self.layer.borderColor = config.splitColor.CGColor;
     
@@ -60,9 +119,9 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     [self setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self setContentHuggingPriority:UILayoutPriorityFittingSizeLevel forAxis:UILayoutConstraintAxisVertical];
     
-    
     self.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.5];
-    UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight]];
+    UIVisualEffectView *effectView = \
+    [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight]];
     [self addSubview:effectView];
     [effectView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self);
@@ -82,25 +141,34 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         self.titleLabel.font = [UIFont systemFontOfSize:config.titleFontSize];
         self.titleLabel.textColor = config.titleColor;
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
-        //self.titleLabel.backgroundColor = config.backgroundColor;
-        
         self.titleLabel.text = self.title;
         lastAttribute = self.titleLabel.mas_bottom;
     }
     
     BOOL titleIsNil = (self.title.length == 0) ? YES : NO;
     
-    self.shareView = [UIView new];
-    [self addSubview:self.shareView];
-    [self.shareView mas_makeConstraints:^(MASConstraintMaker *make) {
+    UICollectionViewFlowLayout *socialLayout = [UICollectionViewFlowLayout new];
+    socialLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    socialLayout.minimumLineSpacing = 10;
+    socialLayout.minimumInteritemSpacing = 0;
+
+    self.socialView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:socialLayout];
+    [self addSubview:self.socialView];
+    [self.socialView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(lastAttribute).offset(titleIsNil?config.innerMargin:config.titlePadding);
         make.left.right.equalTo(self);
-        make.height.equalTo(@(config.shareHeight));
+        make.height.equalTo(@(config.socailHeight));
     }];
-    //self.shareView.backgroundColor = config.backgroundColor;
+    self.socialView.dataSource = self;
+    self.socialView.delegate = self;
+    self.socialView.scrollsToTop = NO;
+    self.socialView.showsVerticalScrollIndicator = NO;
+    self.socialView.showsHorizontalScrollIndicator = NO;
+    [self.socialView registerClass:[ATShareActionCell class] forCellWithReuseIdentifier:NSStringFromClass([ATShareActionCell class])];
+    self.socialView.contentInset = UIEdgeInsetsMake(0, 10, 0, 10);
+    self.socialView.backgroundColor = [UIColor clearColor];
     
-    
-    lastAttribute = self.shareView.mas_bottom;
+    lastAttribute = self.socialView.mas_bottom;
     
     if (self.res.type == ATShareResTypeImage && [self.res.thumb isKindOfClass:[UIImage class]]) {
         
@@ -116,15 +184,28 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         line.backgroundColor = config.splitColor;
         lastAttribute = line.mas_bottom;
         
-        self.extendView = [UIView new];
-        [self addSubview:self.extendView];
-        [self.extendView mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.equalTo(lastAttribute); //.offset(AT_SPLIT_WIDTH);
+        UICollectionViewFlowLayout *actionLayout = [UICollectionViewFlowLayout new];
+        actionLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+        actionLayout.minimumLineSpacing = 10;
+        actionLayout.minimumInteritemSpacing = 0;
+        
+        self.actionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:actionLayout];
+        [self addSubview:self.actionView];
+        [self.actionView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(lastAttribute);
             make.left.right.equalTo(self);
-            make.height.equalTo(@(config.extendHeight));
+            make.height.equalTo(@(config.actionHeight));
         }];
-        //self.extendView.backgroundColor = config.backgroundColor;
-        lastAttribute = self.extendView.mas_bottom;
+        self.actionView.dataSource = self;
+        self.actionView.delegate = self;
+        self.actionView.scrollsToTop = NO;
+        self.actionView.showsVerticalScrollIndicator = NO;
+        self.actionView.showsHorizontalScrollIndicator = NO;
+        [self.actionView registerClass:[ATShareActionCell class] forCellWithReuseIdentifier:NSStringFromClass([ATShareActionCell class])];
+        self.actionView.contentInset = UIEdgeInsetsMake(0, 10, 0, 10);
+        self.actionView.backgroundColor = [UIColor clearColor];
+        
+        lastAttribute = self.actionView.mas_bottom;
     }
     
     self.cancelBtn = [UIButton buttonWithTarget:self action:@selector(cancenAction:)];
@@ -132,14 +213,14 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(lastAttribute).offset(AT_SPLIT_WIDTH);
         make.left.right.equalTo(self);
-        make.height.equalTo(@(config.buttonHeight));
+        make.height.equalTo(@(config.cancelHeight));
     }];
     [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:config.backgroundColor] forState:UIControlStateNormal];
-    [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:config.actionPressedColor] forState:UIControlStateHighlighted];
-    [self.cancelBtn setTitle:config.defaultActionCancel forState:UIControlStateNormal];
-    [self.cancelBtn setTitleColor:config.actionNormalColor forState:UIControlStateNormal];
-    [self.cancelBtn setTitleColor:config.actionHighlightColor forState:UIControlStateHighlighted];
-    [self.cancelBtn.titleLabel setFont:[UIFont boldSystemFontOfSize:config.buttonFontSize]];
+    [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:config.cancelPressedColor] forState:UIControlStateHighlighted];
+    [self.cancelBtn setTitle:config.defaultCancelText forState:UIControlStateNormal];
+    [self.cancelBtn setTitleColor:config.cancelNormalColor forState:UIControlStateNormal];
+    [self.cancelBtn setTitleColor:config.cancelHighlightColor forState:UIControlStateHighlighted];
+    [self.cancelBtn.titleLabel setFont:[UIFont systemFontOfSize:config.buttonFontSize]];
     
     lastAttribute = self.cancelBtn.mas_bottom;
     
@@ -147,7 +228,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         UIView *view = [UIView new];
         [self addSubview:view];
         [view mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.equalTo(lastAttribute).offset(AT_SPLIT_WIDTH);
+            make.top.equalTo(lastAttribute);//.offset(AT_SPLIT_WIDTH);
             make.left.right.equalTo(self);
             make.height.equalTo(@(35));
         }];
@@ -170,30 +251,76 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     [super hide:self.didHideBlock];
 }
 
+#pragma mark - UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    ATShareViewConfig *config = [ATShareViewConfig globalConfig];
+    if (collectionView == self.socialView) {
+        return CGSizeMake(config.socailWidth, config.socailHeight-20);
+    }
+    return CGSizeMake(config.actionWidth, config.actionHeight-20);
+}
+
+#pragma mark - UICollectionViewDataSource, UICollectionViewDelegate
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    if (collectionView == self.socialView) {
+        return self.socials.count;
+    }
+    return [ATShare defaultWebURLActions].count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    ATShareActionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([ATShareActionCell class])
+                                                                        forIndexPath:indexPath];
+    if (collectionView == self.socialView) {
+        cell.icon = self.socials[indexPath.item].icon;
+        cell.name = self.socials[indexPath.item].name;
+        return cell;
+    }
+    cell.icon = [ATShare defaultWebURLActions][indexPath.item].icon;
+    cell.name = [ATShare defaultWebURLActions][indexPath.item].name;
+    return cell;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (self.selected) {
+        self.selected(self.socials[indexPath.item]);
+    }
+    if (collectionView == self.socialView) {
+        [[ATShare new] shareTo:self.socials[indexPath.item] res:self.res finished:self.finished];
+    }else {
+        //[ATShare defaultWebURLActions]
+    }
+}
+
 #pragma mark - overwrite
 
 - (void)show:(ATPopupCompletionBlock)block {
-    [self setupWithTitle:self.title res:self.res socials:self.socials selected:self.selected];
+    [self setupWithTitle:self.title res:self.res socials:self.socials selected:self.selected finished:self.finished];
     [super show:block];
 }
 
 #pragma mark - public
 
 - (instancetype)initWithRes:(id<ATShareResProtocol>)res
-                    socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials {
-    return [self initWithRes:res socials:socials selected:nil];
+                    socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
+                   finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished {
+    return [self initWithRes:res socials:socials selected:nil finished:finished];
 }
 
 - (instancetype)initWithRes:(id<ATShareResProtocol>)res
                     socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-                   selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected {
-    return [self initWithTitle:nil res:res socials:socials selected:selected];
+                   selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected
+                   finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished {
+    return [self initWithTitle:nil res:res socials:socials selected:selected finished:finished];
 }
 
 - (instancetype)initWithTitle:(nullable NSString *)title
                           res:(id<ATShareResProtocol>)res
                       socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-                     selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected {
+                     selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected
+                     finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished{
     
     self = [super init];
     if (!self) return nil;
@@ -201,6 +328,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.res = res;
     self.socials = socials;
     self.selected = selected;
+    self.finished = finished;
     return self;
 }
 
@@ -234,8 +362,14 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     };
 }
 
-@end
+- (__kindof ATShareView *(^)(void(^ _Nullable finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social)))withFinished {
+    return ^ __kindof ATShareView *(void(^finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social)) {
+        self.finished = finished;
+        return self;
+    };
+}
 
+@end
 
 @implementation ATShareViewConfig
 
@@ -253,27 +387,29 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     if (!self) return nil;
     
     self.width          = SCREEN_WIDTH;
-    self.shareHeight    = 80.0f;
-    self.extendHeight   = 80.0f;
-    self.buttonHeight   = 50.0f;
+    self.socailWidth    = 63.0f;
+    self.socailHeight   = 120.0f;
+    self.actionWidth    = 63.0f;
+    self.actionHeight   = 120.0f;
+    self.cancelHeight   = 50.0f;
     self.innerMargin    = 15.0f;
     self.cornerRadius   = 0.0f;
     self.titlePadding   = 10.0f;
     
     self.titleFontSize  = 14.0f;
-    self.socialFontSize = 14.0f;
+    self.socialFontSize = 11.0f;
     self.buttonFontSize = 17.0f;
     
     self.backgroundColor    = UIColorHex(0xFFFFFFFF);
     self.titleColor         = UIColorHex(0x666666FF);
-    self.socialColor        = UIColorHex(0x333333FF);
+    self.socialColor        = UIColorHex(0x666666FF);
     self.splitColor         = UIColorHex(0xCCCCCCFF);
     
-    self.actionNormalColor    = UIColorHex(0x333333FF);
-    self.actionHighlightColor = UIColorHex(0xEE873AFF);
-    self.actionPressedColor   = UIColorHex(0xF5F5F5FF);
+    self.cancelNormalColor    = UIColorHex(0x333333FF);
+    self.cancelHighlightColor = UIColorHex(0xEE873AFF);
+    self.cancelPressedColor   = UIColorHex(0xF5F5F5FF);
     
-    self.defaultActionCancel  = @"取消";
+    self.defaultCancelText  = @"取消";
     
     self.dimBackgroundColor = UIColorHex(0x0000007F);
     self.dimBackgroundBlurEnabled = NO;
