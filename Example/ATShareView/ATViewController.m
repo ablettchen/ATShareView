@@ -21,7 +21,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    self.title = @"ATShare";
+    self.title = @"ATShareView";
     
     UIButton *shareBtn = ({
         UIButton *view = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -51,6 +51,23 @@
 }
 
 - (void)shareAction:(UIButton *)sender {
+    
+    ATShareResWeb *web = [ATShareResWeb new];
+    web.title = @"ATShareView";
+    web.desc = @"Social share view";
+    web.thumb = [UIImage imageNamed:@"avatar"];
+    web.urlString = @"https://github.com/ablettchen/ATShareView";
+    
+    ATSocialWechat *social = [ATSocialWechat new];
+    social.appKey = @"wx2ae02e63bbc106f9";
+    social.appSecret = @"135c066f553499b7acd1549bf679308a";
+    social.redirectURL = @"http://mobile.umeng.com/social";
+    
+    void(^selected)(id<ATSocialProtocol> _Nonnull social) = ^(id<ATSocialProtocol> _Nonnull social) {
+        
+    };
+    
+    ATShareView.build.withTitle(@"Share to").withRes(web).withSocials(@[social]).withSelected(selected).showInWindow();
     
 }
 

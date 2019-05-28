@@ -1,13 +1,14 @@
 //
 //  ATShareView.h
-//  ATShare
+//  ATShareView
+//  https://github.com/ablettchen/ATShareView
 //
-//  Created by ablett on 2019/5/28.
+//  Created by ablett on 05/10/2019.
+//  Copyright (c) 2019 ablett. All rights reserved.
 //
 
 #import "ATPopupView.h"
-#import "ATSocialProtocol.h"
-#import "ATShareRes.h"
+#import <ATShare.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,14 +17,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, nonatomic, nullable) NSString *title;
 @property (strong, nonatomic, nonnull) id<ATShareResProtocol> res;
 @property (strong, nonatomic, nonnull) NSArray <id<ATSocialProtocol>> *socials;
-@property (copy, nonatomic, nullable) void(^selected)(id<ATSocialProtocol> _Nonnull social) ;
+@property (copy, nonatomic, nullable) void(^selected)(id<ATSocialProtocol> _Nonnull social);
 
 - (instancetype)initWithRes:(id<ATShareResProtocol>)res
                     socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials;
 
 - (instancetype)initWithRes:(id<ATShareResProtocol>)res
                     socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-                       selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected;
+                   selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected;
 
 - (instancetype)initWithTitle:(nullable NSString *)title
                           res:(id<ATShareResProtocol>)res

@@ -1,8 +1,10 @@
 //
 //  ATShareView.m
-//  ATShare
+//  ATShareView
+//  https://github.com/ablettchen/ATShareView
 //
-//  Created by ablett on 2019/5/28.
+//  Created by ablett on 05/10/2019.
+//  Copyright (c) 2019 ablett. All rights reserved.
 //
 
 #import "ATShareView.h"
@@ -43,6 +45,8 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.socials = socials;
     self.selected = selected;
     
+    self.type = ATPopupTypeSheet;
+    
     ATShareViewConfig *config = [ATShareViewConfig globalConfig];
     self.layer.cornerRadius = config.cornerRadius;
     self.clipsToBounds = YES;
@@ -69,6 +73,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         }];
         self.titleLabel.font = [UIFont systemFontOfSize:config.titleFontSize];
         self.titleLabel.textColor = config.titleColor;
+        self.titleLabel.textAlignment = NSTextAlignmentCenter;
         self.titleLabel.backgroundColor = config.backgroundColor;
         
         self.titleLabel.text = self.title;
@@ -103,7 +108,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         lastAttribute = self.extendView.mas_bottom;
     }
     
-    self.cancelBtn = [UIButton buttonWithTarget:self action:@selector(hide:)];
+    self.cancelBtn = [UIButton buttonWithTarget:self action:@selector(cancenAction:)];
     [self addSubview:self.cancelBtn];
     [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(lastAttribute).offset(AT_SPLIT_WIDTH);
@@ -137,6 +142,13 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.attachedView.at_dimBackgroundColor = config.dimBackgroundColor;
     self.attachedView.at_dimBackgroundBlurEnabled = config.dimBackgroundBlurEnabled;
     self.attachedView.at_dimBackgroundBlurEffectStyle = config.dimBackgroundBlurEffectStyle;
+    
+    
+    [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:[[UIColor redColor] colorWithAlphaComponent:0.1]] forState:UIControlStateNormal];
+}
+
+- (void)cancenAction:(UIButton *)sender {
+    [super hide:self.didHideBlock];
 }
 
 #pragma mark - overwrite
@@ -144,10 +156,6 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
 - (void)show:(ATPopupCompletionBlock)block {
     [self setupWithTitle:self.title res:self.res socials:self.socials selected:self.selected];
     [super show:block];
-}
-
-- (void)hide:(ATPopupCompletionBlock)block {
-    [super hide:block];
 }
 
 #pragma mark - public
@@ -229,11 +237,11 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.shareHeight    = 80.0f;
     self.extendHeight   = 80.0f;
     self.buttonHeight   = 50.0f;
-    self.innerMargin    = 25.0f;
+    self.innerMargin    = 15.0f;
     self.cornerRadius   = 0.0f;
     
     
-    self.titleFontSize  = 18.0f;
+    self.titleFontSize  = 14.0f;
     self.socialFontSize = 14.0f;
     self.buttonFontSize = 17.0f;
     
