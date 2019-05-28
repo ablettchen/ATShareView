@@ -51,12 +51,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat innerMargin;          ///< Default is 25.
 @property (nonatomic, assign) CGFloat cornerRadius;         ///< Default is 0.
 
+@property (nonatomic, assign) CGFloat titlePadding;         ///< Default is 5.
+
 @property (nonatomic, assign) CGFloat titleFontSize;        ///< Default is 18.
 @property (nonatomic, assign) CGFloat socialFontSize;       ///< Default is 14.
 @property (nonatomic, assign) CGFloat buttonFontSize;       ///< Default is 17.
 
 @property (nonatomic, strong) UIColor *backgroundColor;     ///< Default is #FFFFFF.
-@property (nonatomic, strong) UIColor *titleColor;          ///< Default is #333333.
+@property (nonatomic, strong) UIColor *titleColor;          ///< Default is #666666.
 @property (nonatomic, strong) UIColor *socialColor;         ///< Default is #333333.
 @property (nonatomic, strong) UIColor *splitColor;          ///< Default is #CCCCCC.
 

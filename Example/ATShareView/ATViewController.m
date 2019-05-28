@@ -67,7 +67,7 @@
         
     };
     
-    ATShareView.build.withTitle(@"Share to").withRes(web).withSocials(@[social]).withSelected(selected).showInWindow();
+    ATShareView.build.withTitle(@"网页由github.com提供").withRes(web).withSocials(@[social]).withSelected(selected).showInWindow();
     
 }
 

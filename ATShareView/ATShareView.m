@@ -50,7 +50,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     ATShareViewConfig *config = [ATShareViewConfig globalConfig];
     self.layer.cornerRadius = config.cornerRadius;
     self.clipsToBounds = YES;
-    self.backgroundColor = config.backgroundColor;
+    //self.backgroundColor = config.backgroundColor;
     self.layer.borderWidth = AT_SPLIT_WIDTH;
     self.layer.borderColor = config.splitColor.CGColor;
     
@@ -59,6 +59,14 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     }];
     [self setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self setContentHuggingPriority:UILayoutPriorityFittingSizeLevel forAxis:UILayoutConstraintAxisVertical];
+    
+    
+    self.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.5];
+    UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight]];
+    [self addSubview:effectView];
+    [effectView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self);
+    }];
     
     MASViewAttribute *lastAttribute = self.mas_top;
     
@@ -74,7 +82,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         self.titleLabel.font = [UIFont systemFontOfSize:config.titleFontSize];
         self.titleLabel.textColor = config.titleColor;
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
-        self.titleLabel.backgroundColor = config.backgroundColor;
+        //self.titleLabel.backgroundColor = config.backgroundColor;
         
         self.titleLabel.text = self.title;
         lastAttribute = self.titleLabel.mas_bottom;
@@ -85,11 +93,11 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.shareView = [UIView new];
     [self addSubview:self.shareView];
     [self.shareView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(lastAttribute).offset(titleIsNil?config.innerMargin:0);
+        make.top.equalTo(lastAttribute).offset(titleIsNil?config.innerMargin:config.titlePadding);
         make.left.right.equalTo(self);
         make.height.equalTo(@(config.shareHeight));
     }];
-    self.shareView.backgroundColor = config.backgroundColor;
+    //self.shareView.backgroundColor = config.backgroundColor;
     
     
     lastAttribute = self.shareView.mas_bottom;
@@ -97,14 +105,25 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     if (self.res.type == ATShareResTypeImage && [self.res.thumb isKindOfClass:[UIImage class]]) {
         
     }else {
+        
+        UIView *line = [UIView new];
+        [self addSubview:line];
+        [line mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(lastAttribute);
+            make.left.right.equalTo(self);
+            make.height.equalTo(@(AT_SPLIT_WIDTH));
+        }];
+        line.backgroundColor = config.splitColor;
+        lastAttribute = line.mas_bottom;
+        
         self.extendView = [UIView new];
         [self addSubview:self.extendView];
         [self.extendView mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.equalTo(lastAttribute).offset(AT_SPLIT_WIDTH);
+            make.top.equalTo(lastAttribute); //.offset(AT_SPLIT_WIDTH);
             make.left.right.equalTo(self);
             make.height.equalTo(@(config.extendHeight));
         }];
-        self.extendView.backgroundColor = config.backgroundColor;
+        //self.extendView.backgroundColor = config.backgroundColor;
         lastAttribute = self.extendView.mas_bottom;
     }
     
@@ -115,9 +134,11 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         make.left.right.equalTo(self);
         make.height.equalTo(@(config.buttonHeight));
     }];
-    [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:self.backgroundColor] forState:UIControlStateNormal];
+    [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:config.backgroundColor] forState:UIControlStateNormal];
     [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:config.actionPressedColor] forState:UIControlStateHighlighted];
     [self.cancelBtn setTitle:config.defaultActionCancel forState:UIControlStateNormal];
+    [self.cancelBtn setTitleColor:config.actionNormalColor forState:UIControlStateNormal];
+    [self.cancelBtn setTitleColor:config.actionHighlightColor forState:UIControlStateHighlighted];
     [self.cancelBtn.titleLabel setFont:[UIFont boldSystemFontOfSize:config.buttonFontSize]];
     
     lastAttribute = self.cancelBtn.mas_bottom;
@@ -142,9 +163,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.attachedView.at_dimBackgroundColor = config.dimBackgroundColor;
     self.attachedView.at_dimBackgroundBlurEnabled = config.dimBackgroundBlurEnabled;
     self.attachedView.at_dimBackgroundBlurEffectStyle = config.dimBackgroundBlurEffectStyle;
-    
-    
-    [self.cancelBtn setBackgroundImage:[UIImage imageWithColor:[[UIColor redColor] colorWithAlphaComponent:0.1]] forState:UIControlStateNormal];
+
 }
 
 - (void)cancenAction:(UIButton *)sender {
@@ -239,14 +258,14 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.buttonHeight   = 50.0f;
     self.innerMargin    = 15.0f;
     self.cornerRadius   = 0.0f;
-    
+    self.titlePadding   = 10.0f;
     
     self.titleFontSize  = 14.0f;
     self.socialFontSize = 14.0f;
     self.buttonFontSize = 17.0f;
     
     self.backgroundColor    = UIColorHex(0xFFFFFFFF);
-    self.titleColor         = UIColorHex(0x333333FF);
+    self.titleColor         = UIColorHex(0x666666FF);
     self.socialColor        = UIColorHex(0x333333FF);
     self.splitColor         = UIColorHex(0xCCCCCCFF);
     
