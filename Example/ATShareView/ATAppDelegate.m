@@ -9,6 +9,7 @@
 
 #import "ATAppDelegate.h"
 #import "ATViewController.h"
+#import <ATShare.h>
 
 @implementation ATAppDelegate
 
@@ -21,6 +22,8 @@
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:[ATViewController new]];
     self.window.rootViewController = nav;
     [self.window makeKeyAndVisible];
+    
+    [ATShare globleConfig:@"5835007ef43e48061900110b"];
     
     return YES;
 }
@@ -50,6 +53,11 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    ///< iOS 9 and later
+    return [ATShare handleOpenURL:url options:options];
 }
 
 @end

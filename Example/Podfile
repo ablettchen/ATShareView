@@ -6,6 +6,8 @@ platform :ios, '8.0'
 
 target 'ATShareView_Example' do
   pod 'ATShareView', :path => '../'
+  
+  pod 'ATToastView'
 
   target 'ATShareView_Tests' do
     inherit! :search_paths

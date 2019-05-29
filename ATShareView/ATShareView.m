@@ -11,14 +11,16 @@
 #import <ATCategories.h>
 #import <Masonry.h>
 #import <ATPopupView/UIView+ATPopup.h>
+#import <ATCategories.h>
 
 @interface ATShareActionCell : UICollectionViewCell
 @property (copy, nonatomic) UIImage *icon;
 @property (copy, nonatomic) NSString *name;
 @end
 @interface ATShareActionCell ()
-@property (strong, nonatomic) UIImageView *iconView;
+@property (strong, nonatomic) UIButton *iconView;
 @property (strong, nonatomic) UILabel *nameLabel;
+@property (copy, nonatomic) void(^selectedBlock)(void);
 @end
 @implementation ATShareActionCell
 
@@ -31,13 +33,14 @@
     ATShareViewConfig *config = [ATShareViewConfig globalConfig];
     
     _iconView = ({
-        UIImageView *view = [UIImageView new];
+        UIButton *view = [UIButton buttonWithType:UIButtonTypeCustom];
         [self addSubview:view];
         [view mas_makeConstraints:^(MASConstraintMaker *make) {
             make.size.mas_equalTo(CGSizeMake(config.socailWidth, config.socailWidth));
             make.top.equalTo(self);
             make.centerX.equalTo(self);
         }];
+        [view addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
         view;
     });
     
@@ -60,12 +63,18 @@
 
 - (void)setIcon:(UIImage *)icon {
     _icon = icon;
-    self.iconView.image = icon;
+    [self.iconView setBackgroundImage:icon forState:UIControlStateNormal];
 }
 
 - (void)setName:(NSString *)name {
     _name = name;
     self.nameLabel.text = name?:@"-";
+}
+
+- (void)buttonAction:(UIButton *)sender {
+    if (self.selectedBlock) {
+        self.selectedBlock();
+    }
 }
 
 @end
@@ -75,6 +84,9 @@
 @property (strong, nonatomic) UICollectionView *socialView;
 @property (strong, nonatomic) UICollectionView *actionView;
 @property (strong, nonatomic) UIButton *cancelBtn;
+
+@property (strong, nonatomic) ATShare *share;
+
 @end
 @implementation ATShareView
 
@@ -232,10 +244,12 @@
         make.bottom.equalTo(lastAttribute);
     }];
     
-    [[ATPopupWindow sharedWindow] setTouchWildToHide:NO];
+    [[ATPopupWindow sharedWindow] setTouchWildToHide:YES];
     self.attachedView.at_dimBackgroundColor = config.dimBackgroundColor;
     self.attachedView.at_dimBackgroundBlurEnabled = config.dimBackgroundBlurEnabled;
     self.attachedView.at_dimBackgroundBlurEffectStyle = config.dimBackgroundBlurEffectStyle;
+    
+    self.share = [ATShare new];
 
 }
 
@@ -268,28 +282,21 @@
     if (collectionView == self.socialView) {
         cell.icon = self.socials[indexPath.item].icon;
         cell.name = self.socials[indexPath.item].name;
+        @weakify(self);
+        cell.selectedBlock = ^{
+            if (self.selected) {
+                self.selected(self.socials[indexPath.item]);
+            }
+            if (self.socials[indexPath.item].type != kATSocialTypeCustom) {
+                id <ATSocialProtocol>socail = self.socials[indexPath.item];
+                [self.share shareTo:socail res:self.res finished:self.finished];
+            }
+        };
         return cell;
     }
     cell.icon = [ATShare defaultWebURLActions][indexPath.item].icon;
     cell.name = [ATShare defaultWebURLActions][indexPath.item].name;
     return cell;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.selected) {
-        self.selected(self.socials[indexPath.item]);
-    }
-    if (collectionView == self.socialView) {
-        if (self.socials[indexPath.item].type == kATSocialTypeCustom) {
-            if (self.selected) {
-                self.selected(self.socials[indexPath.item]);
-            }
-        }else {
-            [[ATShare new] shareTo:self.socials[indexPath.item] res:self.res finished:self.finished];
-        }
-    }else {
-        //[ATShare defaultWebURLActions]
-    }
 }
 
 #pragma mark - overwrite

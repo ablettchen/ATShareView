@@ -11,13 +11,17 @@
 #import <ATCategories/ATCategories.h>
 #import <ATShareView.h>
 #import "ATCustomSocails.h"
+#import <ATToastView.h>
 
 #define wechat_appkey       @"wx2ae02e63bbc106f9"
 #define wechat_appSecret    @"135c066f553499b7acd1549bf679308a"
-#define qq_appkey           @"wx2ae02e63bbc106f9"
-#define qq_appSecret        @"135c066f553499b7acd1549bf679308a"
-#define sina_appkey         @"wx2ae02e63bbc106f9"
-#define sina_appSecret      @"135c066f553499b7acd1549bf679308a"
+
+#define qq_appkey           @"1105877074"
+#define qq_appSecret        @"ljoV3ksZld58bjl6"
+
+#define sina_appkey         @"3368355118"
+#define sina_appSecret      @"d92a7808288a3100a611b2208f095839"
+
 #define umeng_redirectUrl   @"http://mobile.umeng.com/social"
 #define sina_redirectUrl    @"http://sns.whalecloud.com/sina2/callback"
 
@@ -74,6 +78,9 @@
     wechat.redirectURL = umeng_redirectUrl;
     
     ATSocialWechatTimeline *wechatTimeline = [ATSocialWechatTimeline new];
+    wechatTimeline.appKey = wechat_appkey;
+    wechatTimeline.appSecret = wechat_appSecret;
+    wechatTimeline.redirectURL = umeng_redirectUrl;
     
     ATSocialQQ *qq = [ATSocialQQ new];
     qq.appKey = qq_appkey;
@@ -81,6 +88,9 @@
     qq.redirectURL = umeng_redirectUrl;
     
     ATSocialQZone *qZone = [ATSocialQZone new];
+    qZone.appKey = qq_appkey;
+    qZone.appSecret = qq_appSecret;
+    qZone.redirectURL = umeng_redirectUrl;
     
     ATSocialSina *sina = [ATSocialSina new];
     sina.appKey = sina_appkey;
@@ -92,11 +102,17 @@
     NSArray <id<ATSocialProtocol>> *socails = @[ablett, wechat, wechatTimeline, qq, qZone, sina];
     
     void(^selected)(id<ATSocialProtocol> _Nonnull social) = ^(id<ATSocialProtocol> _Nonnull social) {
-        
+        if (social.type == kATSocialTypeCustom) {
+            if ([social isKindOfClass:NSClassFromString(@"ATSocailAblett")]) {
+                NSString *msg = [NSString stringWithFormat:@"%@ clicked", social.description];
+                ATToastView.build.withDetail(msg).showInWindow();
+            }
+        }
     };
     
     void(^ _Nullable finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social) = ^(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social) {
-        
+        NSString *msg = (error)?(error.localizedDescription?:@"分享失败"):@"分享成功";
+        ATToastView.build.withDetail(msg).showInWindow();
     };
     
     ATShareView.build.withTitle(@"网页由github.com提供").withRes(web).withSocials(socails)\
