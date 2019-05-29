@@ -10,6 +10,7 @@
 #import "ATViewController.h"
 #import <ATCategories/ATCategories.h>
 #import <ATShareView.h>
+#import "ATCustomSocails.h"
 
 #define wechat_appkey       @"wx2ae02e63bbc106f9"
 #define wechat_appSecret    @"135c066f553499b7acd1549bf679308a"
@@ -86,9 +87,9 @@
     sina.appSecret = sina_appSecret;
     sina.redirectURL = sina_redirectUrl;
     
-    ATSocialWechat *wechat1 = [ATSocialWechat new];
+    ATSocailAblett *ablett = [ATSocailAblett new];
     
-    NSArray <id<ATSocialProtocol>> *socails = @[wechat, wechatTimeline, qq, qZone, sina, wechat1];
+    NSArray <id<ATSocialProtocol>> *socails = @[ablett, wechat, wechatTimeline, qq, qZone, sina];
     
     void(^selected)(id<ATSocialProtocol> _Nonnull social) = ^(id<ATSocialProtocol> _Nonnull social) {
         

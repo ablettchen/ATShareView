@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UIColor *splitColor;          ///< Default is #CCCCCC.
 
 @property (nonatomic, strong) UIColor *cancelNormalColor;       ///< Default is #333333. effect with ATPopupActionStyleNormal
-@property (nonatomic, strong) UIColor *cancelHighlightColor;    ///< Default is #E76153. effect with ATPopupActionStyleHighlighted
+@property (nonatomic, strong) UIColor *cancelHighlightColor;    ///< Default is #666666. effect with ATPopupActionStyleHighlighted
 @property (nonatomic, strong) UIColor *cancelPressedColor;      ///< Default is #F5F5F5.
 
 @property (nonatomic, strong) NSString *defaultCancelText;    ///< Default is "取消".

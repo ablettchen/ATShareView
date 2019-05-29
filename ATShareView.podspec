@@ -18,7 +18,7 @@ s.social_media_url        = 'https://twitter.com/ablettchen'
 s.ios.deployment_target   = '8.0'
 s.source_files            = 'ATShareView/**/*.{h,m}'
 s.public_header_files     = 'ATShareView/**/*.{h}'
-s.resource                = 'ATShareView/ATShareView.bundle'
+#s.resource                = 'ATShareView/ATShareView.bundle'
 s.requires_arc            = true
 
 

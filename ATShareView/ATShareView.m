@@ -12,16 +12,8 @@
 #import <Masonry.h>
 #import <ATPopupView/UIView+ATPopup.h>
 
-NS_INLINE NSBundle *at_share_bundle(void) {
-    return [NSBundle at_bundleForClass:[ATShareView class] resource:@"ATShareView" ofType:@"bundle"];
-}
-
-NS_INLINE UIImage *at_imageNamed(NSString *name) {
-    return [at_share_bundle() at_imageNamed:name];
-}
-
 @interface ATShareActionCell : UICollectionViewCell
-@property (copy, nonatomic) NSString *icon;
+@property (copy, nonatomic) UIImage *icon;
 @property (copy, nonatomic) NSString *name;
 @end
 @interface ATShareActionCell ()
@@ -66,9 +58,9 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     return self;
 }
 
-- (void)setIcon:(NSString *)icon {
+- (void)setIcon:(UIImage *)icon {
     _icon = icon;
-    self.iconView.image = at_imageNamed(icon);
+    self.iconView.image = icon;
 }
 
 - (void)setName:(NSString *)name {
@@ -288,7 +280,13 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
         self.selected(self.socials[indexPath.item]);
     }
     if (collectionView == self.socialView) {
-        [[ATShare new] shareTo:self.socials[indexPath.item] res:self.res finished:self.finished];
+        if (self.socials[indexPath.item].type == kATSocialTypeCustom) {
+            if (self.selected) {
+                self.selected(self.socials[indexPath.item]);
+            }
+        }else {
+            [[ATShare new] shareTo:self.socials[indexPath.item] res:self.res finished:self.finished];
+        }
     }else {
         //[ATShare defaultWebURLActions]
     }
@@ -406,7 +404,7 @@ NS_INLINE UIImage *at_imageNamed(NSString *name) {
     self.splitColor         = UIColorHex(0xCCCCCCFF);
     
     self.cancelNormalColor    = UIColorHex(0x333333FF);
-    self.cancelHighlightColor = UIColorHex(0xEE873AFF);
+    self.cancelHighlightColor = UIColorHex(0x666666FF);
     self.cancelPressedColor   = UIColorHex(0xF5F5F5FF);
     
     self.defaultCancelText  = @"取消";
