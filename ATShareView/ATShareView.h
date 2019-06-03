@@ -7,78 +7,57 @@
 //  Copyright (c) 2019 ablett. All rights reserved.
 //
 
-#import "ATPopupView.h"
+#import <UIKit/UIKit.h>
 #import <ATShare.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ATShareView : ATPopupView
+@class ATShareConf;
+@interface ATShareView : UIView
 
-@property (copy, nonatomic, nullable) NSString *title;
-@property (strong, nonatomic, nonnull) id<ATShareResProtocol> res;
-@property (strong, nonatomic, nonnull) NSArray <id<ATSocialProtocol>> *socials;
-@property (copy, nonatomic, nullable) void(^selected)(id<ATSocialProtocol> _Nonnull social);
-@property (copy, nonatomic, nullable) void(^finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social);
+@property (nullable, nonatomic, copy) NSString *title;
+@property (nonnull, nonatomic, strong, readonly) ATShare *share;
 
-- (instancetype)initWithRes:(id<ATShareResProtocol>)res
-                    socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-                   finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished;;
+@property (nonatomic, copy, readonly) void(^update)(void(^block)(ATShareConf *conf));
 
-- (instancetype)initWithRes:(id<ATShareResProtocol>)res
-                    socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-                   selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected
-                   finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished;
+@property (nullable, nonatomic, copy) void(^didShow)(BOOL finished);
+@property (nullable, nonatomic, copy) void(^didHide)(BOOL finished);
 
-- (instancetype)initWithTitle:(nullable NSString *)title
-                          res:(id<ATShareResProtocol>)res
-                      socials:(nonnull NSArray <id<ATSocialProtocol>> *)socials
-                     selected:(void(^_Nullable)(id<ATSocialProtocol> _Nonnull social))selected
-                     finished:(void(^_Nullable)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social))finished;
++ (instancetype)viewWithTitle:(nullable NSString *)title
+                        share:(nonnull ATShare *)share
+                 customSocial:(void(^__nullable)(id<ATSocialProtocol>socail))customSocial
+                    urlAction:(void(^__nullable)(id<ATWebURLActionProtocol>action))urlAction
+                     finished:(nullable ATShareFinishedBlock)finished;
 
-///////////////////////////////////////////////////////////////////////////
-
-- (__kindof ATShareView *(^)(NSString * _Nullable title))withTitle;
-- (__kindof ATShareView *(^)(id<ATShareResProtocol> res))withRes;
-- (__kindof ATShareView *(^)(NSArray <id<ATSocialProtocol>> * _Nonnull socials))withSocials;
-- (__kindof ATShareView *(^)(void(^ _Nullable selected)(id<ATSocialProtocol> _Nonnull social)))withSelected;
-- (__kindof ATShareView *(^)(void(^ _Nullable finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social)))withFinished;
+- (void)show;
 
 @end
 
-@interface ATShareViewConfig : NSObject
+@interface ATShareConf : NSObject
 
-+ (ATShareViewConfig*)globalConfig;
+@property (nonatomic, strong) UIColor *dimBackgroundColor;      ///< default is 0x0000007F
+@property (nonatomic, strong) UIColor *backgroundColor;         ///< default is 0xFFFFFFFF
 
-@property (nonatomic, assign) CGFloat width;                ///< Default is screen width.
-@property (nonatomic, assign) CGFloat socailWidth;
-@property (nonatomic, assign) CGFloat socailHeight;          ///< default 80
-@property (nonatomic, assign) CGFloat actionHeight;         ///< default 80
-@property (nonatomic, assign) CGFloat actionWidth;
+@property (nonatomic, assign) CGFloat width;                    ///< Default is screen width.
 
-@property (nonatomic, assign) CGFloat cancelHeight;         ///< Default is 50.
-@property (nonatomic, assign) CGFloat innerMargin;          ///< Default is 25.
-@property (nonatomic, assign) CGFloat cornerRadius;         ///< Default is 0.
+@property (nonatomic, assign) UIEdgeInsets insets;              ///< default is UIEdgeInsetsMake(15, 15, 15, 15).
 
-@property (nonatomic, assign) CGFloat titlePadding;         ///< Default is 5.
+@property (nonatomic, strong) UIFont *titleFont;                ///< default is systemFont(14).
+@property (nonatomic, strong) UIColor *titleColor;              ///< default is 0x666666FF;
 
-@property (nonatomic, assign) CGFloat titleFontSize;        ///< Default is 18.
-@property (nonatomic, assign) CGFloat socialFontSize;       ///< Default is 14.
-@property (nonatomic, assign) CGFloat buttonFontSize;       ///< Default is 17.
+@property (nonatomic, assign) CGSize itemSize;                  /// default is (80, 80)
+@property (nonatomic, strong) UIFont *itemFont;                 ///< default is systemFont(11).
+@property (nonatomic, strong) UIColor *itemColor;               ///< Default is #666666.
 
-@property (nonatomic, strong) UIColor *backgroundColor;     ///< Default is #FFFFFF.
-@property (nonatomic, strong) UIColor *titleColor;          ///< Default is #666666.
-@property (nonatomic, strong) UIColor *socialColor;         ///< Default is #666666.
-@property (nonatomic, strong) UIColor *splitColor;          ///< Default is #CCCCCC.
+@property (nonatomic, strong) UIColor *splitColor;              ///< default is 0xE7E7E7FF.
+@property (nonatomic, assign) CGFloat splitWidth;               ///< default is 1/[UIScreen mainScreen].scale
 
-@property (nonatomic, strong) UIColor *cancelNormalColor;       ///< Default is #333333. effect with ATPopupActionStyleNormal
-@property (nonatomic, strong) UIColor *cancelHighlightColor;    ///< Default is #666666. effect with ATPopupActionStyleHighlighted
-@property (nonatomic, strong) UIColor *cancelPressedColor;      ///< Default is #F5F5F5.
-
-@property (nonatomic, strong) NSString *defaultCancelText;    ///< Default is "取消".
-
-@property (nonatomic, strong) UIColor *dimBackgroundColor;                       ///< Default is 0x0000007F
-@property (nonatomic, assign) BOOL dimBackgroundBlurEnabled;                     ///< Default is NO
-@property (nonatomic, assign) UIBlurEffectStyle dimBackgroundBlurEffectStyle;    ///< Default is UIBlurEffectStyleExtraLight
+@property (nonatomic, assign) CGFloat cancelHeight;             ///< Default is 50.
+@property (nonatomic, strong) UIFont *cancelFont;               ///< default is systemFont(17).
+@property (nonatomic, strong) UIColor *cancelColor;             ///< Default is 0x333333FF
+@property (nonatomic, strong) UIColor *cancelHighlightColor;    ///< Default is 0x666666FF.
+@property (nonatomic, strong) UIColor *cancelPressedColor;      ///< Default is 0xF5F5F5FF.
+@property (nonatomic, strong) NSString *defaultCancelText;      ///< Default is "取消".
 
 @end
 

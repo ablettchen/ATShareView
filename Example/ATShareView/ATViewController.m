@@ -11,7 +11,7 @@
 #import <ATCategories/ATCategories.h>
 #import <ATShareView.h>
 #import "ATCustomSocails.h"
-#import <ATToastView.h>
+#import <UIView+ATToast.h>
 
 #define wechat_appkey       @"wx2ae02e63bbc106f9"
 #define wechat_appSecret    @"135c066f553499b7acd1549bf679308a"
@@ -99,24 +99,32 @@
     
     ATSocailAblett *ablett = [ATSocailAblett new];
     
-    NSArray <id<ATSocialProtocol>> *socails = @[ablett, wechat, wechatTimeline, qq, qZone, sina];
+    ATShare *share = [ATShare new];
+    share.res = web;
     
-    void(^selected)(id<ATSocialProtocol> _Nonnull social) = ^(id<ATSocialProtocol> _Nonnull social) {
-        if (social.type == kATSocialTypeCustom) {
-            if ([social isKindOfClass:NSClassFromString(@"ATSocailAblett")]) {
-                NSString *msg = [NSString stringWithFormat:@"%@ clicked", social.description];
-                ATToastView.build.withDetail(msg).showInWindow();
-            }
+    [share addSocial:ablett];
+    [share addSocial:wechat];
+    [share addSocial:wechatTimeline];
+    [share addSocial:qq];
+    [share addSocial:qZone];
+    [share addSocial:sina];
+    
+    ATShareView *shareView = \
+    [ATShareView viewWithTitle:@"页面有github.com提供" share:share customSocial:^(id<ATSocialProtocol>  _Nonnull socail) {
+        
+        if ([socail isKindOfClass:NSClassFromString(@"ATSocailAblett")]) {
+            NSString *msg = [NSString stringWithFormat:@"%@ clicked", socail.description];
+            [[UIApplication sharedApplication].keyWindow makeToast:msg];
         }
-    };
-    
-    void(^ _Nullable finished)(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social) = ^(NSError * _Nullable error, id<ATSocialProtocol> _Nullable social) {
-        NSString *msg = (error)?(error.localizedDescription?:@"分享失败"):@"分享成功";
-        ATToastView.build.withDetail(msg).showInWindow();
-    };
-    
-    ATShareView.build.withTitle(@"网页由github.com提供").withRes(web).withSocials(socails)\
-    .withSelected(selected).withFinished(finished).showInWindow();
+        
+    } urlAction:^(id<ATWebURLActionProtocol>  _Nonnull action) {
+        
+        
+        
+    } finished:^(NSError * _Nullable error, id<ATSocialProtocol>  _Nullable social) {
+        
+    }];
+    [shareView show];
     
 }
 
