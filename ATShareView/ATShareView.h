@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *title;
 @property (nonnull, nonatomic, strong, readonly) ATShare *share;
 
+@property (nonatomic, assign) BOOL validEnable; // default is NO; if social or action`s `enable` = NO. It`s invalid.
+
 @property (nonatomic, copy, readonly) void(^update)(void(^block)(ATShareConf *conf));
 
 @property (nullable, nonatomic, copy) void(^didShow)(BOOL finished);

@@ -134,6 +134,7 @@
     
     self.clipsToBounds = YES;
     self.alpha = 0.001f;
+    _validEnable = NO;
     self.update(^(ATShareConf * _Nonnull conf) {});
     
     return self;
@@ -165,8 +166,13 @@
         self.actionView.backgroundColor = [UIColor clearColor];
         
         /// 刷新 socialView、actionView
-        [self.socialView reloadData];
-        [self.actionView reloadData];
+        if (self.validEnable) {
+            if (self.share.validSocials.count > 0) {[self.socialView reloadData];}
+            if (self.share.validWebURLActions.count > 0) {[self.actionView reloadData];}
+        }else {
+            if (self.share.socials.count > 0) {[self.socialView reloadData];}
+            if (self.share.webURLActions.count > 0) {[self.actionView reloadData];}
+        }
     };
 }
 
@@ -283,7 +289,8 @@
         lastAttribute = self.titleLabel.mas_bottom;
     }
     
-    if (self.share.socials.count > 0) {
+    if ((self.validEnable && self.share.validSocials.count > 0) || \
+        (!self.validEnable && self.share.socials.count > 0)) {
         [self addSubview:self.socialView];
         [self.socialView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(lastAttribute).offset((self.title.length > 0) ? 10 : self.conf.insets.top);
@@ -292,14 +299,15 @@
         }];
         lastAttribute = self.socialView.mas_bottom;
     }
-    
-    if (self.share.webURLActions.count > 0) {
+
+    if ((self.validEnable && self.share.validWebURLActions.count > 0) || \
+        (!self.validEnable && self.share.webURLActions.count > 0)) {
         
         UIView *split = ({
             UIView *view = [UIView new];
             [self addSubview:view];
             [view mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.top.equalTo(self.socialView.mas_bottom);
+                make.top.equalTo(lastAttribute);
                 make.left.right.equalTo(self);
                 make.height.mas_equalTo(self.conf.splitWidth);
             }];
@@ -314,12 +322,12 @@
             make.height.mas_equalTo(self.conf.itemSize.height);
         }];
         
-        lastAttribute = self.socialView.mas_bottom;
+        lastAttribute = self.actionView.mas_bottom;
     }
     
     [self addSubview:self.cancelBtn];
     [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.actionView.mas_bottom).offset(self.conf.splitWidth);
+        make.top.equalTo(lastAttribute).offset(self.conf.splitWidth);
         make.left.right.equalTo(self);
         make.height.mas_equalTo(self.conf.cancelHeight);
     }];
@@ -416,44 +424,39 @@
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (collectionView == self.socialView) {
+        if (self.validEnable) {return self.share.validSocials.count;}
         return self.share.socials.count;
     }
+    if (self.validEnable) {return self.share.validWebURLActions.count;}
     return self.share.webURLActions.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (collectionView == self.socialView) {
         ATShareItemCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ATShareItemCell" forIndexPath:indexPath];
-        cell.icon = self.share.socials[indexPath.item].icon;
-        cell.name = self.share.socials[indexPath.item].name;
-        cell.conf = self.conf;
+        id<ATSocialProtocol>obj = self.validEnable?self.share.validSocials[indexPath.item]:self.share.socials[indexPath.item];
+        cell.icon = obj.icon;cell.name = obj.name;cell.conf = self.conf;
         @weakify(self);
         cell.selectedBlock = ^{
             @strongify(self);
-            if (self.share.socials[indexPath.row].type == kATSocialTypeCustom) {
-                if (self.share.socials[indexPath.item].customAction) {
-                    self.share.socials[indexPath.item].customAction(self.share.socials[indexPath.item]);
-                }
+            if (obj.type == kATSocialTypeCustom) {
+                if (obj.customAction) {obj.customAction(obj);}
             }else {
-                [self.share shareTo:self.share.socials[indexPath.item] res:self.share.res finished:self.finished];
+                [self.share shareTo:obj res:self.share.res finished:self.finished];
+                [self hide];
             }
         };
         return cell;
     }
     ATShareItemCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ATShareItemCell" forIndexPath:indexPath];
-    cell.icon = self.share.webURLActions[indexPath.item].icon;
-    cell.name = self.share.webURLActions[indexPath.item].name;
-    cell.conf = self.conf;
+    id<ATWebURLActionProtocol>obj = self.validEnable?self.share.validWebURLActions[indexPath.item]:self.share.webURLActions[indexPath.item];
+    cell.icon = obj.icon;cell.name = obj.name;cell.conf = self.conf;
+    @weakify(self);
     cell.selectedBlock = ^{
-        if (self.share.webURLActions[indexPath.item].action) {
-            self.share.webURLActions[indexPath.item].action(self.share.webURLActions[indexPath.item]);
-        }
+        @strongify(self);
+        if (obj.action) {obj.action(obj);}
     };
     return cell;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-
 }
 
 #pragma mark - Public

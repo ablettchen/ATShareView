@@ -9,7 +9,7 @@
 
 #import "ATViewController.h"
 #import <ATCategories/ATCategories.h>
-#import <ATShareView.h>
+#import <ATShareView/ATShareView.h>
 #import "ATCustomSocails.h"
 #import <UIView+ATToast.h>
 
@@ -30,6 +30,10 @@
 @end
 
 @implementation ATViewController
+
+NS_INLINE UIWindow *at_keyWindow() {
+    return [UIApplication sharedApplication].keyWindow;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -100,7 +104,7 @@
     ATSocailAblett *ablett = [ATSocailAblett new];
     ablett.customAction = ^(id<ATSocialProtocol>  _Nullable obj) {
         NSString *msg = [NSString stringWithFormat:@"%@ clicked", obj.description];
-        [[UIApplication sharedApplication].keyWindow makeToast:msg];
+        [at_keyWindow() makeToast:msg];
     };
     
     ATShare *share = [ATShare new];
@@ -115,15 +119,15 @@
     
     ATWebURLActionCopy *copy = [ATWebURLActionCopy new];
     copy.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
-        [[UIApplication sharedApplication].keyWindow makeToast:obj.description];
+        [at_keyWindow() makeToast:obj.description];
     };
     ATWebURLActionRefresh *refresh = [ATWebURLActionRefresh new];
     refresh.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
-        [[UIApplication sharedApplication].keyWindow makeToast:obj.description];
+        [at_keyWindow() makeToast:obj.description];
     };
     ATWebURLActionOpenInSafari *safari = [ATWebURLActionOpenInSafari new];
     safari.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
-        [[UIApplication sharedApplication].keyWindow makeToast:obj.description];
+        [at_keyWindow() makeToast:obj.description];
     };
     
     [share addWebURLAction:copy];
@@ -136,9 +140,10 @@
                       finished:^(NSError * _Nullable error, id<ATSocialProtocol>  _Nullable social) {
                           
                           NSString *msg = error?error.localizedDescription:@"succeed";
-                          [[UIApplication sharedApplication].keyWindow makeToast:msg];
+                          [at_keyWindow() makeToast:msg];
 
     }];
+    shareView.validEnable = YES;
     [shareView show];
     
 }
