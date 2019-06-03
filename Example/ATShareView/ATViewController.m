@@ -131,7 +131,7 @@
     [share addWebURLAction:safari];
     
     ATShareView *shareView = \
-    [ATShareView viewWithTitle:@"页面有github.com提供"
+    [ATShareView viewWithTitle:@"页面由github.com提供"
                          share:share
                       finished:^(NSError * _Nullable error, id<ATSocialProtocol>  _Nullable social) {
                           
