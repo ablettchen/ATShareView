@@ -15,6 +15,7 @@
 @synthesize appKey;
 @synthesize appSecret;
 @synthesize redirectURL;
+@synthesize customAction;
 
 - (enum ATSocialType)type {
     return kATSocialTypeCustom;

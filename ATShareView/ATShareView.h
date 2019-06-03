@@ -25,8 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)viewWithTitle:(nullable NSString *)title
                         share:(nonnull ATShare *)share
-                 customSocial:(void(^__nullable)(id<ATSocialProtocol>socail))customSocial
-                    urlAction:(void(^__nullable)(id<ATWebURLActionProtocol>action))urlAction
                      finished:(nullable ATShareFinishedBlock)finished;
 
 - (void)show;

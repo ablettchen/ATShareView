@@ -98,6 +98,10 @@
     sina.redirectURL = sina_redirectUrl;
     
     ATSocailAblett *ablett = [ATSocailAblett new];
+    ablett.customAction = ^(id<ATSocialProtocol>  _Nullable obj) {
+        NSString *msg = [NSString stringWithFormat:@"%@ clicked", obj.description];
+        [[UIApplication sharedApplication].keyWindow makeToast:msg];
+    };
     
     ATShare *share = [ATShare new];
     share.res = web;
@@ -109,20 +113,18 @@
     [share addSocial:qZone];
     [share addSocial:sina];
     
+    ATWebURLActionCopy *copy = [ATWebURLActionCopy new];
+    ATWebURLActionRefresh *refresh = [ATWebURLActionRefresh new];
+    ATWebURLActionOpenInSafari *safari = [ATWebURLActionOpenInSafari new];
+    [share addWebURLAction:copy];
+    [share addWebURLAction:refresh];
+    [share addWebURLAction:safari];
+    
     ATShareView *shareView = \
-    [ATShareView viewWithTitle:@"页面有github.com提供" share:share customSocial:^(id<ATSocialProtocol>  _Nonnull socail) {
-        
-        if ([socail isKindOfClass:NSClassFromString(@"ATSocailAblett")]) {
-            NSString *msg = [NSString stringWithFormat:@"%@ clicked", socail.description];
-            [[UIApplication sharedApplication].keyWindow makeToast:msg];
-        }
-        
-    } urlAction:^(id<ATWebURLActionProtocol>  _Nonnull action) {
-        
-        
-        
-    } finished:^(NSError * _Nullable error, id<ATSocialProtocol>  _Nullable social) {
-        
+    [ATShareView viewWithTitle:@"页面有github.com提供"
+                         share:share
+                      finished:^(NSError * _Nullable error, id<ATSocialProtocol>  _Nullable social) {
+                          NSLog(@"%@", error?error.localizedDescription:@"succeed");
     }];
     [shareView show];
     

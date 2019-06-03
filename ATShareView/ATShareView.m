@@ -52,8 +52,6 @@
 @interface ATShareView ()<UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UICollectionViewDataSource>
 
 @property (nonnull, nonatomic, strong, readwrite) ATShare *share;
-@property (nullable, nonatomic, copy) void(^customSocial)(id<ATSocialProtocol>socail);
-@property (nullable, nonatomic, copy) void(^urlAction)(id<ATWebURLActionProtocol>action);
 @property (nullable, nonatomic, copy) ATShareFinishedBlock finished;
 
 @property (nonatomic, strong, readonly) ATShareConf *conf;
@@ -316,15 +314,11 @@
 
 + (instancetype)viewWithTitle:(nullable NSString *)title
                         share:(nonnull ATShare *)share
-                 customSocial:(void(^__nullable)(id<ATSocialProtocol>socail))customSocial
-                    urlAction:(void(^__nullable)(id<ATWebURLActionProtocol>action))urlAction
                      finished:(nullable ATShareFinishedBlock)finished {
     if (!share || !share.res || share.socials.count == 0) {return nil;}
     ATShareView *view = [ATShareView new];
     view.title = title;
     view.share = share;
-    view.customSocial = customSocial;
-    view.urlAction = urlAction;
     view.finished = finished;
     return view;
 }
