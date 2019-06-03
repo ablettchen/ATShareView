@@ -20,16 +20,63 @@
 #import "Masonry.h"
 #endif
 
-@interface ATShareActionCell : UICollectionViewCell
+@interface ATShareItemCell : UICollectionViewCell
 @property (copy, nonatomic) UIImage *icon;
 @property (copy, nonatomic) NSString *name;
+@property (nonatomic, strong) ATShareConf *conf;
 @end
-@interface ATShareActionCell ()
+@interface ATShareItemCell ()
 @property (strong, nonatomic) UIButton *iconView;
 @property (strong, nonatomic) UILabel *nameLabel;
 @property (copy, nonatomic) void(^selectedBlock)(void);
 @end
-@implementation ATShareActionCell
+@implementation ATShareItemCell
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (!self) return nil;
+    
+    _iconView = ({
+        UIButton *view = [UIButton buttonWithTarget:self action:@selector(buttonAction:)];
+        [self addSubview:view];
+        view;
+    });
+    
+    _nameLabel = ({
+        UILabel *label = [UILabel new];
+        [self addSubview:label];
+        label.textAlignment = NSTextAlignmentCenter;
+        label.numberOfLines = 2;
+        label;
+    });
+    
+    return self;
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    CGFloat labelHeight = 30.f;
+    CGSize iconSize = CGSizeMake(self.conf.itemSize.width, self.conf.itemSize.width);
+    CGFloat inset = (self.conf.itemSize.height - iconSize.height-labelHeight) / 3.f;
+    
+    [self.iconView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.size.mas_equalTo(iconSize);
+        make.centerX.equalTo(self);
+        make.top.equalTo(self).inset(inset);
+    }];
+    
+    [self.nameLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.iconView.mas_bottom).inset(inset);
+        make.left.right.equalTo(self);
+    }];
+}
+
+- (void)setConf:(ATShareConf *)conf {
+    _conf = conf;
+    self.nameLabel.font = conf.itemFont;
+    self.nameLabel.textColor = conf.itemColor;
+}
 
 - (void)setIcon:(UIImage *)icon {
     _icon = icon;
@@ -58,8 +105,8 @@
 
 @property (nonatomic, strong, readonly) UIView *backgroundView;
 @property (nonatomic, strong, readonly) UILabel *titleLabel;
-@property (nonatomic, strong, readonly) UIView *socialView;
-@property (nonatomic, strong, readonly) UIView *actionView;
+@property (nonatomic, strong, readonly) UICollectionView *socialView;
+@property (nonatomic, strong, readonly) UICollectionView *actionView;
 @property (nonatomic, strong, readonly) UIButton *cancelBtn;
 
 @end
@@ -103,21 +150,23 @@
         ///backgroundView
         self.backgroundView.backgroundColor = self.conf.dimBackgroundColor;
         ///contentView
-        self.backgroundColor = self.conf.backgroundColor;
+        //self.backgroundColor = self.conf.backgroundColor;
         self.layer.borderWidth = self.conf.splitWidth;
         self.layer.borderColor = self.conf.splitColor.CGColor;
         ///titleLabel
-        self.titleLabel.backgroundColor = self.conf.backgroundColor;
+        //self.titleLabel.backgroundColor = self.conf.backgroundColor;
         self.titleLabel.font = self.conf.titleFont;
         self.titleLabel.textColor = self.conf.titleColor;
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         
         ///socialView
-        self.socialView.backgroundColor = self.conf.backgroundColor;
+        self.socialView.backgroundColor = [UIColor clearColor];
         ///actionView
-        self.actionView.backgroundColor = self.conf.backgroundColor;
+        self.actionView.backgroundColor = [UIColor clearColor];
         
         /// 刷新 socialView、actionView
+        [self.socialView reloadData];
+        [self.actionView reloadData];
     };
 }
 
@@ -146,15 +195,41 @@
     return _titleLabel;
 }
 
-- (UIView *)socialView {
+- (UICollectionView *)socialView {
     if (_socialView) return _socialView;
-    _socialView = [UIView new];
+    
+    UICollectionViewFlowLayout *layout = [UICollectionViewFlowLayout new];
+    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    layout.minimumLineSpacing = 10;
+    layout.minimumInteritemSpacing = 0;
+    
+    _socialView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
+    _socialView.dataSource = self;
+    _socialView.delegate = self;
+    _socialView.scrollsToTop = NO;
+    _socialView.showsVerticalScrollIndicator = NO;
+    _socialView.showsHorizontalScrollIndicator = NO;
+    [_socialView registerClass:[ATShareItemCell class] forCellWithReuseIdentifier:@"ATShareItemCell"];
+    _socialView.contentInset = UIEdgeInsetsMake(0, 10, 0, 10);
     return _socialView;
 }
 
-- (UIView *)actionView {
+- (UICollectionView *)actionView {
     if (_actionView) return _actionView;
-    _actionView = [UIView new];
+    
+    UICollectionViewFlowLayout *layout = [UICollectionViewFlowLayout new];
+    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    layout.minimumLineSpacing = 10;
+    layout.minimumInteritemSpacing = 0;
+    
+    _actionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
+    _actionView.dataSource = self;
+    _actionView.delegate = self;
+    _actionView.scrollsToTop = NO;
+    _actionView.showsVerticalScrollIndicator = NO;
+    _actionView.showsHorizontalScrollIndicator = NO;
+    [_actionView registerClass:[ATShareItemCell class] forCellWithReuseIdentifier:@"ATShareItemCell"];
+    _actionView.contentInset = UIEdgeInsetsMake(0, 10, 0, 10);
     return _actionView;
 }
 
@@ -173,8 +248,6 @@
 
 - (void)setupViewIn:(UIView *)view {
     
-    
-    
     [view addSubview:self.backgroundView];
     [self.backgroundView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(view);
@@ -186,8 +259,15 @@
         make.centerX.equalTo(self.backgroundView);
     }];
     
-    MASViewAttribute *lastAttribute = self.mas_top;
+    UIBlurEffect *effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
+    UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:effect];
+    [self addSubview:effectView];
+    [effectView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self);
+    }];
     
+    MASViewAttribute *lastAttribute = self.mas_top;
+
     if (self.title.length > 0) {
         [self addSubview:self.titleLabel];
         [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -203,19 +283,39 @@
         lastAttribute = self.titleLabel.mas_bottom;
     }
     
-    [self addSubview:self.socialView];
-    [self.socialView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(lastAttribute).offset((self.title.length > 0) ? 10 : self.conf.insets.top);
-        make.left.right.equalTo(self);
-        make.height.mas_equalTo(self.conf.itemSize.height);
-    }];
-
-    [self addSubview:self.actionView];
-    [self.actionView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.socialView.mas_bottom).offset(self.conf.splitWidth);
-        make.left.right.equalTo(self);
-        make.height.mas_equalTo(self.conf.itemSize.height);
-    }];
+    if (self.share.socials.count > 0) {
+        [self addSubview:self.socialView];
+        [self.socialView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(lastAttribute).offset((self.title.length > 0) ? 10 : self.conf.insets.top);
+            make.left.right.equalTo(self);
+            make.height.mas_equalTo(self.conf.itemSize.height);
+        }];
+        lastAttribute = self.socialView.mas_bottom;
+    }
+    
+    if (self.share.webURLActions.count > 0) {
+        
+        UIView *split = ({
+            UIView *view = [UIView new];
+            [self addSubview:view];
+            [view mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.top.equalTo(self.socialView.mas_bottom);
+                make.left.right.equalTo(self);
+                make.height.mas_equalTo(self.conf.splitWidth);
+            }];
+            view.backgroundColor = self.conf.splitColor;
+            view;
+        });
+        
+        [self addSubview:self.actionView];
+        [self.actionView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(split.mas_bottom);
+            make.left.right.equalTo(self);
+            make.height.mas_equalTo(self.conf.itemSize.height);
+        }];
+        
+        lastAttribute = self.socialView.mas_bottom;
+    }
     
     [self addSubview:self.cancelBtn];
     [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -308,7 +408,53 @@
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return self.conf.itemSize;
+}
+
 #pragma mark - UICollectionViewDataSource, UICollectionViewDelegate
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    if (collectionView == self.socialView) {
+        return self.share.socials.count;
+    }
+    return self.share.webURLActions.count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (collectionView == self.socialView) {
+        ATShareItemCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ATShareItemCell" forIndexPath:indexPath];
+        cell.icon = self.share.socials[indexPath.item].icon;
+        cell.name = self.share.socials[indexPath.item].name;
+        cell.conf = self.conf;
+        @weakify(self);
+        cell.selectedBlock = ^{
+            @strongify(self);
+            if (self.share.socials[indexPath.row].type == kATSocialTypeCustom) {
+                if (self.share.socials[indexPath.item].customAction) {
+                    self.share.socials[indexPath.item].customAction(self.share.socials[indexPath.item]);
+                }
+            }else {
+                [self.share shareTo:self.share.socials[indexPath.item] res:self.share.res finished:self.finished];
+            }
+        };
+        return cell;
+    }
+    ATShareItemCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ATShareItemCell" forIndexPath:indexPath];
+    cell.icon = self.share.webURLActions[indexPath.item].icon;
+    cell.name = self.share.webURLActions[indexPath.item].name;
+    cell.conf = self.conf;
+    cell.selectedBlock = ^{
+        if (self.share.webURLActions[indexPath.item].action) {
+            self.share.webURLActions[indexPath.item].action(self.share.webURLActions[indexPath.item]);
+        }
+    };
+    return cell;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+
+}
 
 #pragma mark - Public
 
@@ -343,7 +489,7 @@
 - (void)reset {
     
     _dimBackgroundColor     = UIColorHex(0x0000007F);
-    _backgroundColor        = UIColorHex(0xE7E7E7FF);
+    _backgroundColor        = UIColorHex(0xFFFFFF80);
     _width                  = SCREEN_WIDTH;
     
     _insets                 = UIEdgeInsetsMake(15, 15, 15, 15);
@@ -351,11 +497,11 @@
     _titleFont              = [UIFont systemFontOfSize:14];
     _titleColor             = UIColorHex(0x666666FF);
     
-    _itemSize               = CGSizeMake(80, 80);
+    _itemSize               = CGSizeMake(63, 120);
     _itemFont               = [UIFont systemFontOfSize:11];
     _itemColor              = UIColorHex(0x666666FF);
     
-    _splitColor             = UIColorHex(0xE7E7E7FF);
+    _splitColor             = UIColorHex(0xC4C4C4FF);
     _splitWidth             = 1/[UIScreen mainScreen].scale;
     
     _cancelHeight           = 50.f;

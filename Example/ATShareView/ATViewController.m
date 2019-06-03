@@ -114,8 +114,18 @@
     [share addSocial:sina];
     
     ATWebURLActionCopy *copy = [ATWebURLActionCopy new];
+    copy.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
+        [[UIApplication sharedApplication].keyWindow makeToast:obj.description];
+    };
     ATWebURLActionRefresh *refresh = [ATWebURLActionRefresh new];
+    refresh.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
+        [[UIApplication sharedApplication].keyWindow makeToast:obj.description];
+    };
     ATWebURLActionOpenInSafari *safari = [ATWebURLActionOpenInSafari new];
+    safari.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
+        [[UIApplication sharedApplication].keyWindow makeToast:obj.description];
+    };
+    
     [share addWebURLAction:copy];
     [share addWebURLAction:refresh];
     [share addWebURLAction:safari];
@@ -124,7 +134,10 @@
     [ATShareView viewWithTitle:@"页面有github.com提供"
                          share:share
                       finished:^(NSError * _Nullable error, id<ATSocialProtocol>  _Nullable social) {
-                          NSLog(@"%@", error?error.localizedDescription:@"succeed");
+                          
+                          NSString *msg = error?error.localizedDescription:@"succeed";
+                          [[UIApplication sharedApplication].keyWindow makeToast:msg];
+
     }];
     [shareView show];
     
