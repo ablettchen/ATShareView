@@ -147,7 +147,7 @@ static ATShareManager *defaultManager = nil;
                           if (finished) {finished(aError, social);}
                           [at_keyWindow() makeToast:msg];
                       }];
-    shareView.validEnable = YES;
+    shareView.validEnable = NO; ///< 设置为YES, 只显示已经安装了的平台
     [shareView show];
 }
 
