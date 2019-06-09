@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UIColor *cancelPressedColor;      ///< Default is 0xF5F5F5FF.
 @property (nonatomic, strong) NSString *defaultCancelText;      ///< Default is "取消".
 
+- (void)reset;
+
 @end
 
 NS_ASSUME_NONNULL_END
