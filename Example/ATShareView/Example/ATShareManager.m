@@ -74,7 +74,7 @@ static ATShareManager *defaultManager = nil;
             case SocialTypeAblett:{
                 ATSocailAblett *social = [ATSocailAblett new];
                 social.customAction = ^(id<ATSocialProtocol>  _Nullable obj) {
-                    [at_keyWindow() makeToast:[NSString stringWithFormat:@"请处理自定义平台 - %@ 事件", obj.description]];
+                    [at_keyWindow() showToast:[NSString stringWithFormat:@"请处理自定义平台 - %@ 事件", obj.description]];
                 };
                 [share addSocial:social];
             }break;
@@ -120,15 +120,15 @@ static ATShareManager *defaultManager = nil;
     
     ATWebURLActionCopy *copy = [ATWebURLActionCopy new];
     copy.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
-        [at_keyWindow() makeToast:[NSString stringWithFormat:@"请处理 URL Action - %@ 事件", obj.description]];
+        [at_keyWindow() showToast:[NSString stringWithFormat:@"请处理 URL Action - %@ 事件", obj.description]];
     };
     ATWebURLActionRefresh *refresh = [ATWebURLActionRefresh new];
     refresh.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
-        [at_keyWindow() makeToast:[NSString stringWithFormat:@"请处理 URL Action - %@ 事件", obj.description]];
+        [at_keyWindow() showToast:[NSString stringWithFormat:@"请处理 URL Action - %@ 事件", obj.description]];
     };
     ATWebURLActionOpenInSafari *safari = [ATWebURLActionOpenInSafari new];
     safari.action = ^(id<ATWebURLActionProtocol>  _Nullable obj) {
-        [at_keyWindow() makeToast:[NSString stringWithFormat:@"请处理 URL Action - %@ 事件", obj.description]];
+        [at_keyWindow() showToast:[NSString stringWithFormat:@"请处理 URL Action - %@ 事件", obj.description]];
     };
     [share addWebURLAction:copy];
     [share addWebURLAction:refresh];
@@ -145,7 +145,7 @@ static ATShareManager *defaultManager = nil;
                                                                       code:1001
                                                                   userInfo:@{NSLocalizedDescriptionKey:msg}]:nil;
                           if (finished) {finished(aError, social);}
-                          [at_keyWindow() makeToast:msg];
+                          [at_keyWindow() showToast:msg];
                       }];
     shareView.validEnable = NO; ///< 设置为YES, 只显示已经安装了的平台
     
