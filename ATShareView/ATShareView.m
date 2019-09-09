@@ -109,8 +109,6 @@
 @property (nonatomic, strong, readonly) UICollectionView *actionView;
 @property (nonatomic, strong, readonly) UIButton *cancelBtn;
 
-@property (assign, nonatomic) BOOL showing;
-
 @end
 
 @implementation ATShareView
@@ -136,7 +134,6 @@
     
     self.clipsToBounds = YES;
     self.alpha = 0.001f;
-    _showing = NO;
     _validEnable = NO;
     self.update(^(ATShareConf * _Nonnull conf) {});
     
@@ -367,10 +364,7 @@
 }
 
 - (void)hide:(void(^ __nullable)(BOOL finished))completion {
-    
-    if (self.showing == NO) {return;}
-    self.showing = NO;
-    
+    if (self.superview == nil) {return;}
     // hide aanimation
     [UIView animateWithDuration:0.3
                           delay:0
@@ -396,10 +390,7 @@
 }
 
 - (void)showIn:(UIView *)view completion:(void(^)(BOOL finished))completion {
-    
-    if (self.showing) {return;}
-    self.showing = YES;
-    
+    if (self.superview != nil) {return;}
     // setup views
     [self setupViewIn:view];
     // show animation
