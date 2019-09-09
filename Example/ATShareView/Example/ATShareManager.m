@@ -148,6 +148,11 @@ static ATShareManager *defaultManager = nil;
                           [at_keyWindow() makeToast:msg];
                       }];
     shareView.validEnable = NO; ///< 设置为YES, 只显示已经安装了的平台
+    
+    
+    shareView.update(^(ATShareConf * _Nonnull conf) {
+        
+    });
     [shareView show];
 }
 
